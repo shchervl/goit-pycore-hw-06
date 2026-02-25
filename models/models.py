@@ -1,9 +1,22 @@
 from collections import UserDict
 
 
+def validate_phone(value: str) -> None:
+    if not value.isdigit() or len(value) != 10:
+        raise ValueError(f"Phone number must be 10 digits, got: '{value}'")
+
+
 class Field:
     def __init__(self, value):
         self.value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
 
     def __str__(self):
         return str(self.value)
@@ -18,9 +31,12 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, value):
-        if not value.isdigit() or len(value) != 10:
-            raise ValueError(f"Phone number must be 10 digits, got: '{value}'")
         super().__init__(value)
+
+    @Field.value.setter
+    def value(self, new_value):
+        validate_phone(new_value)
+        self._value = new_value
 
 
 class Record:
@@ -40,7 +56,7 @@ class Record:
         phone_obj = self.find_phone(old_phone)
         if phone_obj is None:
             raise ValueError(f"Phone {old_phone} not found in record")
-        phone_obj.value = Phone(new_phone).value
+        phone_obj.value = new_phone
 
     def find_phone(self, phone):
         return next((p for p in self.phones if p.value == phone), None)
